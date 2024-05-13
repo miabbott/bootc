@@ -1,9 +1,13 @@
 name: Deploy docs to pages
 
 on:
+  pull_request:
+    paths:
+      - '**/*.md'
+      - 'docs/**'
   push:
     branches: ["main"]
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -52,8 +56,10 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./docs/book/html
+          retention-days: 7
 
   deploy:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
