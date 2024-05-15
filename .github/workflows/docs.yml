@@ -2,8 +2,8 @@ name: Deploy docs to pages
 
 
 on:
-  pull_request:
-    types: [ labeled ]
+  pull_request_target:
+    types: [labeled]
   push:
     branches: ["main"]
 
