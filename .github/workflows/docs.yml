@@ -2,8 +2,10 @@ name: Deploy docs to pages
 
 
 on:
-  pull_request_target:
-    types: [labeled]
+  workflow_run:
+    workflows: [Pull Request Labeler]
+    types:
+      - completed
   push:
     branches: ["main"]
 
