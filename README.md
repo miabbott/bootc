@@ -31,4 +31,4 @@ extra docs
 more docs
 
 
-moar
+moarmoar\n
