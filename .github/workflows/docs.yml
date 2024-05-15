@@ -1,9 +1,11 @@
 name: Deploy docs to pages
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: ["main"]
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -16,6 +18,10 @@ concurrency:
 
 jobs:
   build:
+    # should run on docs PRs and on pushes to main
+    if: >-
+      contains(github.event.pull_request.labels.*.name, 'documentation') ||
+      (github.event == 'push' && github.ref == 'refs/head/main')
     runs-on: ubuntu-latest
     env:
       MDBOOK_VERSION: 0.4.37
@@ -52,8 +58,10 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./docs/book
+          retention-days: 7
 
   deploy:
+    if: ${{ github.event == 'push' && github.ref == 'refs/head/main' }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
