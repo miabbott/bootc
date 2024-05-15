@@ -2,7 +2,7 @@ name: Deploy docs to pages
 
 on:
   pull_request:
-    branches: [main]
+    branches: ["main"]
   push:
     branches: ["main"]
   workflow_dispatch: {}
@@ -20,8 +20,7 @@ jobs:
   build:
     # should run on docs PRs and on pushes to main
     if: >-
-      contains(github.event.pull_request.labels.*.name, 'documentation') ||
-      (github.event == 'push' && github.ref == 'refs/head/main')
+      contains(github.event.pull_request.labels.*.name, 'documentation')
     runs-on: ubuntu-latest
     env:
       MDBOOK_VERSION: 0.4.37
