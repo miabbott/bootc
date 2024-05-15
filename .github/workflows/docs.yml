@@ -16,10 +16,13 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+env:
+  ACTIONS_STEP_DEBUG: true
+
 jobs:
   build:
     # should run on docs PRs and on pushes to main
-    if: contains(github.event.pull_request.labels.*.name, 'documentation') || (github.event_name == 'push' && github.ref == 'refs/head/main')
+    if: contains(github.event.pull_request.labels.*.name, 'documentation') || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     env:
       MDBOOK_VERSION: 0.4.37
@@ -54,10 +57,9 @@ jobs:
         run: cd docs && mdbook-mermaid install && mdbook build
 
   deploy:
-    if: ${{ github.event == 'push' && github.ref == 'refs/head/main' }}
+    if: github.event == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
     steps:
