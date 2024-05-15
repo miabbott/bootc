@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build:
     # should run on docs PRs and on pushes to main
-    if: contains(github.event.pull_request.labels.*.name, 'documentation') || (github.event_name == 'push' && github.ref == 'refs/head/main')
+    if: contains(github.event.pull_request.labels.*.name, 'documentation') || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     env:
       MDBOOK_VERSION: 0.4.37
