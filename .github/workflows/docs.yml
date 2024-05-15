@@ -16,6 +16,9 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+env:
+  ACTIONS_STEP_DEBUG: true
+
 jobs:
   build:
     # should run on docs PRs and on pushes to main
