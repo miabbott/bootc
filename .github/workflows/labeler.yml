@@ -1,8 +1,57 @@
-name: "Pull Request Labeler"
+name: "Pull Request Info"
+
+# Running testing farm needs TF_API_KEY secret available inside the forked repo.
+# So the pull_request_target trigger has to be used in this case. To protect the
+# secrets this workflow has a PR sender permission checking at first job. Only
+# collaborator with repo write or admin permission can run this workflow.
+
 on:
-- pull_request_target
+  pull_request_target:
+    types: [opened, synchronize, reopened]
 
 jobs:
+  pr-info:
+    permissions:
+      pull-requests: read
+      contents: read
+      statuses: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query author repository permissions
+        uses: octokit/request-action@v2.x
+        id: user_permission
+        with:
+          route: GET /repos/${{ github.repository }}/collaborators/${{ github.event.sender.login }}/permission
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # restrict running of tests to users with admin or write permission for the repository
+      # see https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2022-11-28#get-repository-permissions-for-a-user
+      - name: Check if user does have correct permissions
+        if: contains('admin write', fromJson(steps.user_permission.outputs.data).permission)
+        id: check_user_perm
+        run: |
+          echo "User '${{ github.event.sender.login }}' has permission '${{ fromJson(steps.user_permission.outputs.data).permission }}' allowed values: 'admin', 'write'"
+          echo "allowed_user=true" >> $GITHUB_OUTPUT
+
+      - name: Get information for pull request
+        uses: octokit/request-action@v2.x
+        id: pr-api
+        with:
+          route: GET /repos/${{ github.repository }}/pulls/${{ github.event.number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Save output
+        run: |
+          mkdir -p ./pr
+          echo ${{ steps.check_user_perm.outputs.allowed_user }} > ./pr/allowed_user
+          echo ${{ fromJson(steps.pr-api.outputs.data).head.sha }} > ./pr/sha
+          echo ${{ fromJson(steps.pr-api.outputs.data).head.ref }} > ./pr/ref
+          echo ${{ fromJson(steps.pr-api.outputs.data).head.repo.html_url }} > ./pr/repo_url
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pr-info
+          path: ./pr/
   triage:
     permissions:
       contents: read
