@@ -1,19 +1,11 @@
 ---
 name: Integration Test
 
-permissions:
-  pull-requests: read
-  contents: read
-  statuses: write
-
-# Running testing farm needs TF_API_KEY secret available inside the forked repo.
-# So the pull_request_target trigger has to be used in this case. To protect the
-# secrets this workflow has a PR sender permission checking at first job. Only
-# collaborator with repo write or admin permission can run this workflow.
-
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
+  workflow_run:
+    workflows: [Pull Request Info]
+    types:
+      - completed
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -23,43 +15,20 @@ env:
   AWS_REGION: us-east-1
 
 jobs:
-  pr-info:
+  download:
     runs-on: ubuntu-latest
     steps:
-      - name: Query author repository permissions
-        uses: octokit/request-action@v2.x
-        id: user_permission
+      - uses: actions/download-artifact@v4
         with:
-          route: GET /repos/${{ github.repository }}/collaborators/${{ github.event.sender.login }}/permission
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # restrict running of tests to users with admin or write permission for the repository
-      # see https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2022-11-28#get-repository-permissions-for-a-user
-      - name: Check if user does have correct permissions
-        if: contains('admin write', fromJson(steps.user_permission.outputs.data).permission)
-        id: check_user_perm
+          name: pr-info
+      - name: Set env vars
         run: |
-          echo "User '${{ github.event.sender.login }}' has permission '${{ fromJson(steps.user_permission.outputs.data).permission }}' allowed values: 'admin', 'write'"
-          echo "allowed_user=true" >> $GITHUB_OUTPUT
-
-      - name: Get information for pull request
-        uses: octokit/request-action@v2.x
-        id: pr-api
-        with:
-          route: GET /repos/${{ github.repository }}/pulls/${{ github.event.number }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    outputs:
-      allowed_user: ${{ steps.check_user_perm.outputs.allowed_user }}
-      sha: ${{ fromJson(steps.pr-api.outputs.data).head.sha }}
-      ref: ${{ fromJson(steps.pr-api.outputs.data).head.ref }}
-      repo_url: ${{ fromJson(steps.pr-api.outputs.data).head.repo.html_url }}
-
+          echo "ALLOWED_USER=$(cat ./pr/allowed_user)" >> $GITHUB_ENV
+          echo "SHA=$(cat ./pr/sha)" >> $GITHUB_ENV
+          echo "REF=$(cat ./pr/ref)" >> $GITHUB_ENV
+          echo "REPO_URL=$(cat ./pr/repo_url)" >> $GITHUB_ENV
   rhel94-integration:
-    needs: pr-info
-    if: ${{ needs.pr-info.outputs.allowed_user == 'true' && !contains(github.event.pull_request.labels.*.name, 'control/skip-ci') }}
+    if: ${{ env.ALLOWED_USER == 'true' && !contains(github.event.pull_request.labels.*.name, 'control/skip-ci') }}
     continue-on-error: true
     strategy:
       matrix:
@@ -71,7 +40,7 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ needs.pr-info.outputs.sha }}
+          ref: ${{ env.SHA }}
           fetch-depth: 0
 
       - name: Run the tests
@@ -79,8 +48,8 @@ jobs:
         with:
           compose: CentOS-Stream-9
           api_key: ${{ secrets.TF_API_KEY }}
-          git_url: ${{ needs.pr-info.outputs.repo_url }}
-          git_ref: ${{ needs.pr-info.outputs.ref }}
+          git_url: ${{ env.REPO_RUL }}
+          git_ref: ${{ env.REF }}
           arch: ${{ matrix.arch }}
           tmt_context: "arch=${{ matrix.arch }}"
           tmt_plan_regex: "${{ matrix.platform }}"
@@ -89,8 +58,7 @@ jobs:
           variables: "TEST_OS=rhel-9-4;PLATFORM=${{ matrix.platform }};ARCH=${{ matrix.arch }};AWS_REGION=${{ env.AWS_REGION }}"
 
   cs9-dev-integration:
-    needs: pr-info
-    if: ${{ needs.pr-info.outputs.allowed_user == 'true' && !contains(github.event.pull_request.labels.*.name, 'control/skip-ci') }}
+    if: ${{ env.ALLOWED_USER == 'true' && !contains(github.event.pull_request.labels.*.name, 'control/skip-ci') }}
     continue-on-error: true
     strategy:
       matrix:
@@ -102,7 +70,7 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ needs.pr-info.outputs.sha }}
+          ref: ${{ env.SHA }}
           fetch-depth: 0
 
       - name: Run the tests
@@ -110,8 +78,8 @@ jobs:
         with:
           compose: CentOS-Stream-9
           api_key: ${{ secrets.TF_API_KEY }}
-          git_url: ${{ needs.pr-info.outputs.repo_url }}
-          git_ref: ${{ needs.pr-info.outputs.ref }}
+          git_url: ${{ env.REPO_URL }}
+          git_ref: ${{ env.REF }}
           arch: ${{ matrix.arch }}
           tmt_context: "arch=${{ matrix.arch }}"
           tmt_plan_regex: "${{ matrix.platform }}"
