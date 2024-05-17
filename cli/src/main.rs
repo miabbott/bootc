@@ -1,4 +1,5 @@
 // Good defaults
+// Dummy comment
 #![forbid(unused_must_use)]
 #![deny(unsafe_code)]
 
