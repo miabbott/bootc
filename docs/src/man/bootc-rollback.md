@@ -7,7 +7,7 @@ queued upgrade) then it will be discarded
 
 # SYNOPSIS
 
-**bootc rollback**  \[**\--apply**\] \[**-h**\|**\--help**\]
+**bootc rollback** \[**\--apply**\] \[**-h**\|**\--help**\]
 
 # DESCRIPTION
 
@@ -40,6 +40,19 @@ rollback invocation.
 
 :   Print help (see a summary with -h)
 
+# EXTRA
+
+Note on Rollbacks and the \`/etc\` Directory:
+
+When you perform a rollback (e.g., with \`bootc rollback\`), any changes
+made to files in the \`/etc\` directory won't carry over to the
+rolled-back deployment. The \`/etc\` files will revert to their state
+from that previous deployment instead.
+
+This is because \`bootc rollback\` just reorders the existing
+deployments. It doesnt create new deployments. The \`/etc\` merges
+happen when new deployments are created.
+
 # VERSION
 
-v1.1.6
+v1.4.0
