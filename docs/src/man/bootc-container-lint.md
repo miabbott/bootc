@@ -6,7 +6,8 @@ checks as part of a container build
 # SYNOPSIS
 
 **bootc container lint** \[**\--rootfs**\] \[**\--fatal-warnings**\]
-\[**\--list**\] \[**\--skip**\] \[**-h**\|**\--help**\]
+\[**\--no-truncate**\] \[**\--list**\] \[**\--skip**\]
+\[**-h**\|**\--help**\]
 
 # DESCRIPTION
 
@@ -20,18 +21,22 @@ part of a build process; it will error if any problems are detected.
 
 **\--rootfs**=*ROOTFS* \[default: /\]
 
-:   Operate on the provided rootfs
+:   Operate on the provided rootfs.
 
 **\--fatal-warnings**
 
 :   Make warnings fatal
+
+**\--no-truncate**\
+
+:   Print all the warnings found during the linting process.
 
 **\--list**
 
 :   Instead of executing the lints, just print all available lints. At
     the current time, this will output in YAML format because its
     reasonably human friendly. However, there is no commitment to
-    maintaining this exact format; do not parse it via code or scripts
+    maintaining this exact format; do not parse it via code or scripts.
 
 **\--skip**=*SKIP*
 
@@ -42,7 +47,7 @@ part of a build process; it will error if any problems are detected.
 
 **-h**, **\--help**
 
-:   Print help (see a summary with -h)
+:   Print help (see a summary with -h).
 
 # VERSION
 
