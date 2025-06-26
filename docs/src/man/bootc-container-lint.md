@@ -6,7 +6,8 @@ checks as part of a container build
 # SYNOPSIS
 
 **bootc container lint** \[**\--rootfs**\] \[**\--fatal-warnings**\]
-\[**\--list**\] \[**\--skip**\] \[**-h**\|**\--help**\]
+\[**\--list**\] \[**\--skip**\] \[**\--no-truncate**\]
+\[**-h**\|**\--help**\]
 
 # DESCRIPTION
 
@@ -40,10 +41,16 @@ part of a build process; it will error if any problems are detected.
 
     Example: \--skip nonempty-boot \--skip baseimage-root
 
+**\--no-truncate**
+
+:   Dont truncate the output. By default, only a limited number of
+    entries are shown for each lint, followed by a count of remaining
+    entries
+
 **-h**, **\--help**
 
 :   Print help (see a summary with -h)
 
 # VERSION
 
-v1.1.6
+v1.4.0

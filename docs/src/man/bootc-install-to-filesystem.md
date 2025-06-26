@@ -10,7 +10,7 @@ filesystem structure
 \[**\--acknowledge-destructive**\] \[**\--skip-finalize**\]
 \[**\--source-imgref**\] \[**\--target-transport**\]
 \[**\--target-imgref**\] \[**\--enforce-container-sigpolicy**\]
-\[**\--skip-fetch-check**\] \[**\--run-fetch-check**\]
+\[**\--run-fetch-check**\] \[**\--skip-fetch-check**\]
 \[**\--disable-selinux**\] \[**\--karg**\]
 \[**\--root-ssh-authorized-keys**\] \[**\--generic-image**\]
 \[**\--bound-images**\] \[**\--stateroot**\] \[**-h**\|**\--help**\]
@@ -98,16 +98,17 @@ is currently expected to be empty by default.
     Enabling this option enforces that \`/etc/containers/policy.json\`
     includes a default policy which requires signatures
 
-**\--skip-fetch-check (deprecated, see --run-fetch-check)**
-
-:   This is now the default and has no effect.
-
 **\--run-fetch-check**
 
-:   Verify the target image can be pulled using the bootc image.
+:   Verify the image can be fetched from the bootc image. Updates may
+    fail when the installation host is authenticated with the registry
+    but the pull secret is not in the bootc image
 
-    This will ensure the bootc system can be upgraded,
-    i.e. the registry credentials are available on the bootc image.
+**\--skip-fetch-check**
+
+:   Verify the image can be fetched from the bootc image. Updates may
+    fail when the installation host is authenticated with the registry
+    but the pull secret is not in the bootc image
 
 **\--disable-selinux**
 
@@ -172,4 +173,4 @@ is currently expected to be empty by default.
 
 # VERSION
 
-v1.1.6
+v1.4.0
